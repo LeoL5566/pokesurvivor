@@ -546,6 +546,7 @@ G.DB = (() => {
   // =====================================================================
 
   let readyP = null;
+  const OFFLINE_NAME = 'Trainer', OFFLINE_KEY = 'trainer', OFFLINE_PASS = 'offline';
 
   /** Arranca la base de datos y recupera la sesión anterior. → true si hay sesión. */
   function ready() {
@@ -553,7 +554,15 @@ G.DB = (() => {
     readyP = (async () => {
       try { if (await initCloud()) mode = 'cloud'; }
       catch (e) { console.warn('[DB] sin nube:', e.message); localReason = 'error'; mode = 'local'; }
-      if (mode === 'local') { setSync('local'); return restoreLocal(); }
+      if (mode === 'local') {
+        setSync('local');
+        if (restoreLocal()) return true;
+        // 自用單機版：不用登入，自動建立／進入本機帳號。
+        const accs = read(K_ACC) || {};
+        if (accs[OFFLINE_KEY]) { beginLocal(OFFLINE_KEY, accs[OFFLINE_KEY].name); return true; }
+        const r = await registerLocal(OFFLINE_NAME, OFFLINE_PASS);
+        return !!(r && r.ok);
+      }
       const u = await new Promise(res => { const off = auth.onAuthStateChanged(x => { off(); res(x); }); });
       if (!u) return false;
       try { await openCloud(u); return true; }

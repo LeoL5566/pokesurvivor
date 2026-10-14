@@ -29,6 +29,13 @@ G.Player = class Player {
     this.maxHp = mon.hp + (perks.hp || 0);
     this.hp = this.maxHp;
     this.baseSpd = mon.spd;
+    // 作弊：開局的 HP / 速度 / 金幣倍率
+    if (G.Cheats) {
+      const c = G.Cheats.get();
+      this.maxHp = Math.round(this.maxHp * c.hpMult); this.hp = this.maxHp;
+      this.spdMul *= c.speedMult;
+      this.coinMul *= c.coinMult;
+    }
     this.baseAtk = mon.atk;
 
     this.moves = [];           // todos los movimientos aprendidos
@@ -227,6 +234,7 @@ G.Player = class Player {
    */
   hurt(amount, type = null, pure = false) {
     if (this.invuln > 0 || this.dead) return;
+    if (G.Cheats && G.Cheats.get().godMode && this === (G.Game && G.Game.player)) return;   // 作弊：無敵
     let eff = null;
     if (type) {
       const k = G.Types.mult(type, this.mon.types);
@@ -270,7 +278,7 @@ G.Player = class Player {
 
   /** Devuelve cuántos niveles ha subido (pueden ser varios de golpe). */
   gainXp(amount) {
-    this.xp += amount * this.xpMul;
+    this.xp += amount * this.xpMul * (G.Cheats ? G.Cheats.get().xpMult : 1);
     let leveled = 0;
     while (this.xp >= this.xpNext) {
       this.xp -= this.xpNext;

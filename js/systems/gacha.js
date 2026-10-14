@@ -17,6 +17,7 @@ G.Gacha = (() => {
   /** ¿Qué gasta una tirada de n? → { t1, t10 } o null si no te llega. */
   /** @param use  't1' (tickets normales) o 't10' (un ticket ×10, sólo para la ×10) */
   function costOf(save, n, use = 't1') {
+    if (G.Cheats && G.Cheats.get().infiniteGacha) return { t1: 0, t10: 0 };   // 作弊：無限抽卡
     const t = save.tickets || { t1: 0, t10: 0 };
     if (n === 10 && use === 't10') return t.t10 >= 1 ? { t1: 0, t10: 1 } : null;
     return t.t1 >= n ? { t1: n, t10: 0 } : null;
@@ -97,7 +98,7 @@ G.Gacha = (() => {
       const { rarity, list } = poolNear(want, gen);
       if (rarity === 5) save.pity[gen] = 0;
       let mon = G.U.pick(list);
-      let shiny = G.Sprites.hasShiny(mon.dex) && (forceShiny > 0 ? (forceShiny--, true) : Math.random() < SHINY_RATE);
+      let shiny = G.Sprites.hasShiny(mon.dex) && (forceShiny > 0 ? (forceShiny--, true) : Math.random() < (G.Cheats ? G.Cheats.get().gachaShinyRate : SHINY_RATE));
       // Los shiny no se repiten: si ya tienes ese, sale otro de la misma rareza
       // cuyo shiny te falte; si los tienes todos, sale normal.
       if (shiny && save.shiny[mon.dex]) {
