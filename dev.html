@@ -79,6 +79,8 @@
 </script>
 <!-- seo:end -->
 <link rel="stylesheet" href="css/style.css">
+<!-- 自用單機版：隱藏用不到的線上功能（好友、排行榜、登出、贊助） -->
+<style>.menu-item[data-go="friends"],.menu-item[data-go="rank"],#btn-logout,#btn-support{display:none!important}</style>
 </head>
 <body>
 
@@ -560,6 +562,7 @@
 <script defer src="js/core/util.js"></script>
 <script defer src="js/core/i18n.js"></script>
 <script defer src="js/data/lang-en.js"></script>
+<script defer src="js/data/lang-zh.js"></script>
 <script defer src="js/core/settings.js"></script>
 <script defer src="js/data/music.js"></script>
 <script defer src="js/data/pokedex.js"></script>
@@ -567,6 +570,7 @@
 <!-- núcleo -->
 <script defer src="js/core/firebase-config.js"></script>
 <script defer src="js/core/db.js"></script>
+<script defer src="js/core/cheats.js"></script>
 <script defer src="js/core/audio.js"></script>
 <script defer src="js/core/input.js"></script>
 <script defer src="js/core/touch.js"></script>

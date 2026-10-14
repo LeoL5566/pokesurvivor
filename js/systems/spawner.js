@@ -73,7 +73,7 @@ G.Spawner = (() => {
   function rollShiny(dex) {
     if (!G.Sprites.hasShiny(dex)) return false;
     if (forceShiny > 0) { forceShiny--; return true; }
-    return Math.random() < SHINY_RATE;
+    return Math.random() < (G.Cheats ? G.Cheats.get().wildShinyRate : SHINY_RATE);
   }
 
   function spawnOne(pl, t, angle) {
@@ -127,7 +127,7 @@ G.Spawner = (() => {
 
     // --- goteo normal ---
     if (G.EnemyMgr.count < CAP) {
-      acc += rate(t) * G.Coop.scaleRate(players.length) * (bossFight ? 0.25 : 1) * dt;
+      acc += rate(t) * (G.Cheats ? G.Cheats.get().enemyMult : 1) * G.Coop.scaleRate(players.length) * (bossFight ? 0.25 : 1) * dt;
       let n = Math.floor(acc);
       acc -= n;
       while (n-- > 0 && G.EnemyMgr.count < CAP) spawnOne(anchor(), t);

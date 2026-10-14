@@ -22,8 +22,9 @@ G.I18n = (() => {
   try { saved = localStorage.getItem(KEY); } catch (e) { /* nada */ }
   const byPath = /\/en(\/|$)/.test(location.pathname) ? 'en' : null;
   const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || 'es').toLowerCase();
-  const lang = saved === 'es' || saved === 'en' ? saved : byPath || (nav.startsWith('es') ? 'es' : 'en');
-  document.documentElement.lang = lang;
+  // 自用版：多了繁體中文 ('zh')，沒選過語言時預設中文。
+  const lang = saved === 'es' || saved === 'en' || saved === 'zh' ? saved : byPath || 'zh';
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : lang;
 
   const exact = new Map(), exactLow = new Map();
   let patterns = [], frag = null, fragLow = null, fragMap = new Map();
@@ -31,18 +32,28 @@ G.I18n = (() => {
   const L = '\\p{L}\\p{N}';
   const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  /** Añade traducciones { 'texto en español': 'English text' }. */
-  function add(dict) {
+  /**
+   * Añade traducciones { 'texto en español': 'texto traducido' }.
+   * @param target  idioma del diccionario ('en' por defecto, 'zh' para chino).
+   *                En chino también se carga el inglés como respaldo: lo que no
+   *                tenga traducción china sale en inglés.
+   * @param opts.frag  false: sólo frase exacta (para nombres de Pokémon).
+   */
+  function add(dict, target = 'en', opts = {}) {
+    if (lang === 'es') return;
+    if (target !== lang && !(lang === 'zh' && target === 'en')) return;
+    const primary = target === lang;
+    const useFrag = opts.frag !== false;
     const fr = [];
     for (const [es, en] of Object.entries(dict)) {
       if (!en || es === en) continue;
       if (es.includes('{x}')) {
         const parts = es.split('{x}').map(reEsc);
-        patterns.push({ re: new RegExp('^' + parts.join('(.+?)') + '$', 'u'), reI: new RegExp('^' + parts.join('(.+?)') + '$', 'iu'), en });
+        patterns[primary && target !== 'en' ? 'unshift' : 'push']({ re: new RegExp('^' + parts.join('(.+?)') + '$', 'u'), reI: new RegExp('^' + parts.join('(.+?)') + '$', 'iu'), en });
       } else {
         exact.set(es, en);
         exactLow.set(es.toLowerCase(), en);
-        if (es.length >= 4 || /\s/.test(es)) { fr.push(es); fragMap.set(es.toLowerCase(), en); }
+        if (useFrag && (es.length >= 4 || /\s/.test(es))) { fr.push(es); fragMap.set(es.toLowerCase(), en); }
       }
     }
     // Una sola expresión con todos los trozos (los más largos primero), sólo palabras enteras.
@@ -128,8 +139,10 @@ G.I18n = (() => {
   function startDom() {
     if (lang === 'es') return;
     // Los enlaces a las páginas de la web, a su versión en inglés.
+    if (lang === 'en') {
     const EN_LINKS = { 'guia/': 'en/guide/', 'pokedex/': 'en/pokedex/' };
     document.querySelectorAll('a[href]').forEach(a => { const h = a.getAttribute('href'); if (EN_LINKS[h]) a.setAttribute('href', EN_LINKS[h]); });
+    }
     walk(document.body);
     new MutationObserver(ms => {
       for (const m of ms) {

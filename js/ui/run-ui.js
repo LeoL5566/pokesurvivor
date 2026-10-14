@@ -22,6 +22,7 @@ G.RunUI = (() => {
   function rerollsLeft() {
     const p = G.Game.player;
     // 1 gratis + los comprados en Mejoras (antes, 1 más por cada jefe).
+    if (p && G.Cheats && G.Cheats.get().infiniteRerolls) return 99;   // 作弊：無限重抽
     return p ? Math.max(0, 1 + (p.rerollBonus || 0) - (p.rerolls || 0)) : 0;
   }
 
